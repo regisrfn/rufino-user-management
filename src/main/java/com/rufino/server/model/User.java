@@ -3,13 +3,16 @@ package com.rufino.server.model;
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
@@ -25,8 +28,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(Include.NON_NULL)
 @Entity
-@Table(name = "users", uniqueConstraints = { 
-        @UniqueConstraint(columnNames = "userEmail", name = "uk_user_email"),
+@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "userEmail", name = "uk_user_email"),
         @UniqueConstraint(columnNames = "userNickname", name = "uk_user_nickname"),
         @UniqueConstraint(columnNames = "userNo", name = "uk_user_no") })
 public class User implements Serializable {
@@ -59,9 +61,14 @@ public class User implements Serializable {
     @NotNull(message = "Value should not be empty")
     private boolean isActive, isLocked;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Permission> permissionsList;
+
     public User() {
         this.userId = UUID.randomUUID();
         this.createdAt = ZonedDateTime.now(ZoneId.of("Z"));
+        this.isActive = true;
+        this.isLocked = false;
     }
 
     public void setUserRole(String role) {
@@ -70,6 +77,14 @@ public class User implements Serializable {
         } catch (Exception e) {
             this.role = null;
         }
+    }
+
+    public String getRole() {
+        return this.role.toString();
+    }
+
+    private enum Role {
+        ROLE_USER, ROLE_ADMIN, ROLE_MANAGER, ROLE_SUPER_MANAGER
     }
 
 }
