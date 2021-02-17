@@ -3,24 +3,26 @@ package com.rufino.server.services;
 import static com.rufino.server.security.ConstantSecurity.AUTHORITIES;
 import static com.rufino.server.security.ConstantSecurity.EXPIRATION_TIME;
 import static com.rufino.server.security.ConstantSecurity.RUFINO_LLC;
-import static com.rufino.server.security.ConstantSecurity.TOKEN_CANNOT_BE_VERIFIED;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.rufino.server.exception.ApiRequestException;
 import com.rufino.server.security.UserSecurity;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -53,14 +55,36 @@ public class JwtTokenService {
 
     }
 
-    private List<String> getClaimsFromToken(String token) {
-        try {
-            JWTVerifier verifier = getJwtVerifier();
-            return verifier.verify(token).getClaim(AUTHORITIES).asList(String.class);
-        } catch (JWTVerificationException e) {
-            throw new ApiRequestException(TOKEN_CANNOT_BE_VERIFIED, HttpStatus.FORBIDDEN);
-        }
+    public Authentication getAuthentication(String username, List<GrantedAuthority> authoritiesList,
+            HttpServletRequest request) {
 
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                username, null, authoritiesList);
+        usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        return usernamePasswordAuthenticationToken;
+    }
+
+    public boolean isTokenValid(String username, String token) {
+        return StringUtils.isNotEmpty(username) && isTokenValid(token);
+    }
+
+
+    public String getSubject(String jwt){
+        JWTVerifier verifier = getJwtVerifier();
+        return verifier.verify(jwt).getSubject();
+    }
+
+    //////////////////////////////////////////////// PRIVATE/////////////////////////////
+
+    private boolean isTokenValid(String token) {
+        JWTVerifier verifier = getJwtVerifier();
+        Date expiration = verifier.verify(token).getExpiresAt();
+        return expiration.before(new Date());
+    }
+
+    private List<String> getClaimsFromToken(String token) {
+        JWTVerifier verifier = getJwtVerifier();
+        return verifier.verify(token).getClaim(AUTHORITIES).asList(String.class);
     }
 
     private JWTVerifier getJwtVerifier() {
