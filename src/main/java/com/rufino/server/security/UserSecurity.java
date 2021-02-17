@@ -1,7 +1,9 @@
-package com.rufino.server.model;
+package com.rufino.server.security;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import com.rufino.server.model.User;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
