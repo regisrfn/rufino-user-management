@@ -4,15 +4,21 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.rufino.server.domain.HttpResponse;
+
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
-public class ApiHandlerException {
+@RestControllerAdvice
+public class ApiHandlerException implements ErrorController {
+
+    public static final String ERROR_PATH = "/error";
 
     @ExceptionHandler(value = { ApiRequestException.class })
     public ResponseEntity<Object> handleApiRequestException(ApiRequestException e) {
@@ -47,7 +53,22 @@ public class ApiHandlerException {
         return new ResponseEntity<>(apiException, badRequest);
     }
 
-    public Map<String, String> handleSqlError(DataIntegrityViolationException e) {
+    @RequestMapping(ERROR_PATH)
+    public ResponseEntity<HttpResponse> notFound404() {
+        return createHttpResponse(HttpStatus.NOT_FOUND, "There is no mapping for this URL");
+    }
+
+    @Override
+    public String getErrorPath() {
+        return ERROR_PATH;
+    }
+
+    private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
+        return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
+                httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase()), httpStatus);
+    }
+
+    private Map<String, String> handleSqlError(DataIntegrityViolationException e) {
 
         String errorMsg = e.getMessage();
         errorMsg = errorMsg.replace("\n", "").replace("\r", "");

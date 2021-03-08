@@ -28,7 +28,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
                 HttpStatus.UNAUTHORIZED.getReasonPhrase().toUpperCase(), ConstantSecurity.ACCESS_DENIED_MESSAGE);
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         OutputStream outputStream = response.getOutputStream();
         ObjectMapper om = new ObjectMapper();
         om.writeValue(outputStream, httpResponse);
