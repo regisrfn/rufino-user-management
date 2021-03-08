@@ -30,12 +30,12 @@ public class UserSecurity implements UserDetails {
 
     @Override
     public String getPassword() {
-        return this.user.getUserPassword();
+        return this.user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.user.getUserNickname();
+        return this.user.getNickname();
     }
 
     @Override

@@ -6,10 +6,13 @@ import java.util.UUID;
 import com.rufino.server.dao.UserDao;
 import com.rufino.server.model.User;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class UserRepository implements UserDao {
 
     @Override
-    public User saveOrUpdateUser(User User) {
+    public User saveOrUpdateUser(User user) {
         // TODO Auto-generated method stub
         return null;
     }

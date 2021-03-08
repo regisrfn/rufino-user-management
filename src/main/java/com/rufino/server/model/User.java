@@ -47,10 +47,10 @@ public class User implements Serializable {
     private Long userNo;
 
     @NotNull(message = "Value should not be empty")
-    private String userNickname, userFirstName, userLastName, userPassword, userEmail, userImageUrl;
+    private String nickname, firstname, lastname, password, email, imageUrl;
 
     @Column(columnDefinition = "timestamp with time zone")
-    private ZonedDateTime lastLogin, updatedAt;
+    private ZonedDateTime lastLogin,lastLoginDisplay, updatedAt;
 
     @NotNull(message = "Value should not be empty")
     @Column(columnDefinition = "timestamp with time zone")
