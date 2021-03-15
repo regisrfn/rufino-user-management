@@ -7,9 +7,6 @@ import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-
-
-
 import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -53,6 +50,8 @@ public class ApiHandlerException implements ErrorController {
     private static final String ACCOUNT_DISABLED = "Your account has been disabled. If this is an error, please contact administration";
     private static final String ERROR_PROCESSING_FILE = "Error occurred while processing file";
     private static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission";
+    private static final String EMAIL_NOT_AVAILABLE = "Email has already been taken";
+    private static final String USERNAME_NOT_AVAILABLE = "Username has already been taken";
     public static final String ERROR_PATH = "/error";
 
     @ExceptionHandler(value = { ApiRequestException.class })
@@ -79,16 +78,11 @@ public class ApiHandlerException implements ErrorController {
         return new ResponseEntity<>(apiException, badRequest);
     }
 
-    @ExceptionHandler(value = { DataIntegrityViolationException.class })
-    public ResponseEntity<Object> handleDBException(DataIntegrityViolationException e) {
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
-        Map<String, String> errors = handleSqlError(e);
-        ApiException apiException = new ApiException(errors, badRequest, ZonedDateTime.now());
-
-        return new ResponseEntity<>(apiException, badRequest);
-    }
-
     //////////////////////////////// HTTP RESPONSE /////////////////////////////
+    @ExceptionHandler(value = { DataIntegrityViolationException.class })
+    public ResponseEntity<HttpResponse> handleDBException(DataIntegrityViolationException e) {
+        return handleSqlError(e);
+    }
 
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<HttpResponse> accountDisabledException() {
@@ -169,26 +163,35 @@ public class ApiHandlerException implements ErrorController {
         return ERROR_PATH;
     }
 
-    
     ///////////////////////////// PRIVATE //////////////////////////////////////
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
                 httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase()), httpStatus);
     }
 
-    private Map<String, String> handleSqlError(DataIntegrityViolationException e) {
-
+    private ResponseEntity<HttpResponse> handleSqlError(DataIntegrityViolationException e) {
+        ResponseEntity<HttpResponse> response;
         String errorMsg = e.getMessage();
+
         errorMsg = errorMsg.replace("\n", "").replace("\r", "");
 
-        String pattern = ".*\\w*; SQL.*;.*\\[(uk_customer_email)\\].*";
+        String pattern = ".*\\w*; SQL.*;.*\\[(uk_user_\\w+)\\].*";
         String error = (errorMsg.replaceAll(pattern, "$1"));
-        Map<String, String> errors = new HashMap<>();
 
-        if (error.equals("uk_customer_email"))
-            errors.put("customerEmail", "Email not available");
+        switch (error) {
 
-        return errors;
+        case "uk_customer_email":
+            response = createHttpResponse(BAD_REQUEST, EMAIL_NOT_AVAILABLE);
+            break;
+        case "uk_customer_nickname":
+            response = createHttpResponse(BAD_REQUEST, USERNAME_NOT_AVAILABLE);
+            break;
+        default:
+            response = createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
+            break;
+        }
+
+        return response;
     }
 
 }
