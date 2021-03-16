@@ -42,8 +42,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     @Override
-    public User register(String firstName, String lastName, String username, String email) {
-        return null;
+    public User register(User user) {
+        String password = user.getPassword();
+        user.setPassword(encodePassword(password));
+        return userRepository.saveOrUpdateUser(user);
     }
 
     @Override
@@ -61,6 +63,10 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     @Override
     public User getUserByEmail(String email) {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    private String encodePassword(String password) {
         return null;
     }
 

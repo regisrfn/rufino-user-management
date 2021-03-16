@@ -6,7 +6,7 @@ import com.rufino.server.model.User;
 
 public interface UserService {
 
-    User register(String firstName, String lastName, String username, String email);
+    User register(User user);
 
     List<User> getUsers();
 
