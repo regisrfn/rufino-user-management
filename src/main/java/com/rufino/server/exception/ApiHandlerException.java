@@ -38,21 +38,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import static com.rufino.server.constant.ExceptionConst.*;
+
 @RestControllerAdvice
 public class ApiHandlerException implements ErrorController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-    private static final String ACCOUNT_LOCKED = "Your account has been locked. Please contact administration";
-    private static final String METHOD_IS_NOT_ALLOWED = "This request method is not allowed on this endpoint. Please send a '%s' request";
-    private static final String INTERNAL_SERVER_ERROR_MSG = "An error occurred while processing the request";
-    private static final String INCORRECT_CREDENTIALS = "Username / password incorrect. Please try again";
-    private static final String ACCOUNT_DISABLED = "Your account has been disabled. If this is an error, please contact administration";
-    private static final String ERROR_PROCESSING_FILE = "Error occurred while processing file";
-    private static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission";
-    private static final String EMAIL_NOT_AVAILABLE = "Email has already been taken";
-    private static final String USERNAME_NOT_AVAILABLE = "Username has already been taken";
-    public static final String BAD_REQUEST_MSG = "Request contains invalid fields";
-    public static final String ERROR_PATH = "/error";
+
 
     @ExceptionHandler(value = { ApiRequestException.class })
     public ResponseEntity<HttpResponse> handleApiRequestException(ApiRequestException e) {
@@ -69,7 +61,7 @@ public class ApiHandlerException implements ErrorController {
         });
         return createHttpResponse(BAD_REQUEST, BAD_REQUEST_MSG, errors);
     }
-    
+
     @ExceptionHandler(value = { DataIntegrityViolationException.class })
     public ResponseEntity<HttpResponse> handleDBException(DataIntegrityViolationException e) {
         return handleSqlError(e);
@@ -168,6 +160,7 @@ public class ApiHandlerException implements ErrorController {
 
     private ResponseEntity<HttpResponse> handleSqlError(DataIntegrityViolationException e) {
         ResponseEntity<HttpResponse> response;
+        Map<String, String> errors = new HashMap<>();
         String errorMsg = e.getMessage();
 
         errorMsg = errorMsg.replace("\n", "").replace("\r", "");
@@ -177,13 +170,16 @@ public class ApiHandlerException implements ErrorController {
 
         switch (error) {
 
-        case "uk_customer_email":
-            response = createHttpResponse(BAD_REQUEST, EMAIL_NOT_AVAILABLE);
+        case "uk_user_email":
+            errors.put("email", EMAIL_NOT_AVAILABLE);
+            response = createHttpResponse(BAD_REQUEST, EMAIL_NOT_AVAILABLE, errors);
             break;
-        case "uk_customer_nickname":
-            response = createHttpResponse(BAD_REQUEST, USERNAME_NOT_AVAILABLE);
+        case "uk_user_username":
+            errors.put("email", USERNAME_NOT_AVAILABLE);
+            response = createHttpResponse(BAD_REQUEST, USERNAME_NOT_AVAILABLE, errors);
             break;
         default:
+            LOGGER.error(e.getMessage());
             response = createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
             break;
         }

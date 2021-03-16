@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rufino.server.model.User;
 
+import org.hamcrest.core.Is;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import static com.rufino.server.constant.ExceptionConst.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,6 +58,33 @@ public class PostRequestTests {
         assertThat(response.getLastName()).isEqualTo("Doe");
         assertThat(response.getEmail()).isEqualTo("john@gmail.com");
         my_obj = new JSONObject();
+    }
+
+    @Test
+    void itShouldNotSaveUser_emailExists() throws Exception {
+        JSONObject my_obj = new JSONObject();
+
+        my_obj.put("username", "user123");
+        my_obj.put("firstName", "John");
+        my_obj.put("lastName", "Doe");
+        my_obj.put("email", "john@gmail.com");
+        my_obj.put("password", "123456");
+
+        mockMvc.perform(
+                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(status().isOk()).andReturn();
+
+        my_obj = new JSONObject();
+        my_obj.put("username", "user1234");
+        my_obj.put("firstName", "John");
+        my_obj.put("lastName", "Doe");
+        my_obj.put("email", "john@gmail.com");
+        my_obj.put("password", "123456");
+
+        mockMvc.perform(
+                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(EMAIL_NOT_AVAILABLE.toUpperCase())))
+                .andExpect(status().isBadRequest()).andReturn();
     }
 
 }
