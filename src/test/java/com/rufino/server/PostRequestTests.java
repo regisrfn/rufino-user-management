@@ -33,7 +33,7 @@ public class PostRequestTests {
 
     @BeforeEach
     void clearTable() {
-        jdbcTemplate.update("DELETE FROM user_management");
+        jdbcTemplate.update("DELETE FROM users");
     }
 
     @Test
