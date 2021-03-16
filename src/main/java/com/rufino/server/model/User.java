@@ -1,5 +1,7 @@
 package com.rufino.server.model;
 
+import static com.rufino.server.enumeration.Role.ROLE_USER;
+
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -28,14 +30,12 @@ import com.rufino.server.enumeration.Role;
 import lombok.Getter;
 import lombok.Setter;
 
-import static com.rufino.server.enumeration.Role.ROLE_USER;
-
 @Getter
 @Setter
 @JsonInclude(Include.NON_NULL)
 @Entity
 @Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "email", name = "uk_user_email"),
-        @UniqueConstraint(columnNames = "nickname", name = "uk_user_nickname"),
+        @UniqueConstraint(columnNames = "username", name = "uk_user_username"),
         @UniqueConstraint(columnNames = "userNo", name = "uk_user_no") })
 public class User implements Serializable {
     /**
@@ -52,8 +52,8 @@ public class User implements Serializable {
     private Long userNo;
 
     @NotNull(message = "Value should not be empty")
-    private String nickname, firstName, lastName, password, email; 
-    
+    private String username, firstName, lastName, password, email;
+
     private String imageUrl;
 
     @Column(columnDefinition = "timestamp with time zone")
@@ -77,6 +77,7 @@ public class User implements Serializable {
         this.createdAt = ZonedDateTime.now(ZoneId.of("Z"));
         this.isActive = true;
         this.isLocked = false;
+        this.userNo = (long) Math.floor(100E3 + Math.random()*899999);
         setRole(ROLE_USER);
         setAuthorityList(ROLE_USER.getAuthorities());
     }

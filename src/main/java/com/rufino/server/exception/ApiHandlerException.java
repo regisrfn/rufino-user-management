@@ -2,13 +2,12 @@ package com.rufino.server.exception;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -52,33 +51,25 @@ public class ApiHandlerException implements ErrorController {
     private static final String NOT_ENOUGH_PERMISSION = "You do not have enough permission";
     private static final String EMAIL_NOT_AVAILABLE = "Email has already been taken";
     private static final String USERNAME_NOT_AVAILABLE = "Username has already been taken";
+    public static final String BAD_REQUEST_MSG = "Request contains invalid fields";
     public static final String ERROR_PATH = "/error";
 
     @ExceptionHandler(value = { ApiRequestException.class })
-    public ResponseEntity<Object> handleApiRequestException(ApiRequestException e) {
-        HttpStatus httpStatus = e.getHttpStatus();
-        Map<String, String> errors = new HashMap<>();
-        errors.put("apiError", e.getMessage());
-        ApiException apiException = new ApiException(errors, httpStatus, ZonedDateTime.now());
-
-        return new ResponseEntity<>(apiException, httpStatus);
+    public ResponseEntity<HttpResponse> handleApiRequestException(ApiRequestException e) {
+        return createHttpResponse(e.getHttpStatus(), e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException e) {
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+    public ResponseEntity<HttpResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(error -> {
             String fieldName = error.getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        ApiException apiException = new ApiException(errors, badRequest, ZonedDateTime.now());
-
-        return new ResponseEntity<>(apiException, badRequest);
+        return createHttpResponse(BAD_REQUEST, BAD_REQUEST_MSG, errors);
     }
-
-    //////////////////////////////// HTTP RESPONSE /////////////////////////////
+    
     @ExceptionHandler(value = { DataIntegrityViolationException.class })
     public ResponseEntity<HttpResponse> handleDBException(DataIntegrityViolationException e) {
         return handleSqlError(e);
@@ -138,6 +129,7 @@ public class ApiHandlerException implements ErrorController {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<HttpResponse> internalServerErrorException(Exception exception) {
         LOGGER.error(exception.getMessage());
+        exception.printStackTrace();
         return createHttpResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MSG);
     }
 
@@ -167,6 +159,12 @@ public class ApiHandlerException implements ErrorController {
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
                 httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase()), httpStatus);
+    }
+
+    private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message,
+            Map<String, String> errors) {
+        return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
+                httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase(), errors), httpStatus);
     }
 
     private ResponseEntity<HttpResponse> handleSqlError(DataIntegrityViolationException e) {

@@ -7,6 +7,6 @@ import com.rufino.server.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaDao extends JpaRepository<User, UUID> {
-    public User findUserByNickname(String nickname);   
+    public User findUserByUsername(String username);   
     public User findUserByEmail(String email); 
 }

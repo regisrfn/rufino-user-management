@@ -19,7 +19,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 public class PostRequestTests {
@@ -40,15 +39,14 @@ public class PostRequestTests {
     void itShouldSaveUser() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        my_obj.put("nickname", "user123");
-        my_obj.put("nome", "John");
+        my_obj.put("username", "user123");
+        my_obj.put("firstName", "John");
         my_obj.put("lastName", "Doe");
         my_obj.put("email", "john@gmail.com");
         my_obj.put("password", "123456");
 
-
-        MvcResult result = mockMvc
-                .perform(post("/api/v1/user/save").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+        MvcResult result = mockMvc.perform(
+                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(status().isOk()).andReturn();
 
         User response = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);

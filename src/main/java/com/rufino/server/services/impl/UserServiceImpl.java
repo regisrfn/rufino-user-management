@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,9 +22,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass());
     private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -67,7 +70,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     }
 
     private String encodePassword(String password) {
-        return null;
+        return passwordEncoder.encode(password);
     }
 
 }

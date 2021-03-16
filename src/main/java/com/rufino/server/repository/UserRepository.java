@@ -3,18 +3,26 @@ package com.rufino.server.repository;
 import java.util.List;
 import java.util.UUID;
 
+import com.rufino.server.dao.JpaDao;
 import com.rufino.server.dao.UserDao;
 import com.rufino.server.model.User;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserRepository implements UserDao {
 
+    private JpaDao jpaDataAccess;
+
+    @Autowired
+    public UserRepository(JpaDao jpaDataAccess) {
+        this.jpaDataAccess = jpaDataAccess;
+    }
+
     @Override
     public User saveOrUpdateUser(User user) {
-        // TODO Auto-generated method stub
-        return null;
+        return jpaDataAccess.save(user);
     }
 
     @Override
@@ -46,5 +54,5 @@ public class UserRepository implements UserDao {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
 }
