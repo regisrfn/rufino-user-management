@@ -23,8 +23,8 @@ public class UserSecurity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.user.getPermissionsList().stream().map(p -> {
-            return new SimpleGrantedAuthority(p.getAuthority());
+        return this.user.getAuthorityList().stream().map(p -> {
+            return new SimpleGrantedAuthority(p.toString());
         }).collect(Collectors.toList());
     }
 

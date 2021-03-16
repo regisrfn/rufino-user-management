@@ -11,13 +11,13 @@ public enum Role {
     ROLE_USER(USER_AUTHORITIES), ROLE_HR(HR_AUTHORITIES), ROLE_MANAGER(MANAGER_AUTHORITIES),
     ROLE_ADMIN(ADMIN_AUTHORITIES), ROLE_SUPER_ADMIN(SUPER_USER_AUTHORITIES);
 
-    private String[] authorities;
+    private Authority[] authorities;
 
-    Role(String... authorities) {
+    Role(Authority... authorities) {
         this.authorities = authorities;
     }
 
-    public String[] getAuthorities() {
+    public Authority[] getAuthorities() {
         return authorities;
     }
 

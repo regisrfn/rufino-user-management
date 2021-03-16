@@ -1,9 +1,13 @@
 package com.rufino.server.constant;
 
+import com.rufino.server.enumeration.Authority;
+
+import static com.rufino.server.enumeration.Authority.*;
+
 public class AuthorityConst {
-    public static final String[] USER_AUTHORITIES = { "user:read" };
-    public static final String[] HR_AUTHORITIES = { "user:read", "user:update" };
-    public static final String[] MANAGER_AUTHORITIES = { "user:read", "user:update" };
-    public static final String[] ADMIN_AUTHORITIES = { "user:read", "user:update", "user:create" };
-    public static final String[] SUPER_USER_AUTHORITIES = { "user:read", "user:update", "user:create", "user:delete" };
+    public static final Authority[] USER_AUTHORITIES = { READ };
+    public static final Authority[] HR_AUTHORITIES = { READ, UPDATE };
+    public static final Authority[] MANAGER_AUTHORITIES = { READ, UPDATE };
+    public static final Authority[] ADMIN_AUTHORITIES = { READ, UPDATE, WRITE };
+    public static final Authority[] SUPER_USER_AUTHORITIES = { READ, UPDATE, WRITE, DELETE };
 }
