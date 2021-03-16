@@ -1,8 +1,8 @@
-package com.rufino.server.security;
+package com.rufino.server.constant;
 
 import java.util.concurrent.TimeUnit;
 
-public class ConstantSecurity {
+public class SecurityConst {
 
     public static final long EXPIRATION_TIME = TimeUnit.DAYS.toMillis(1);
     public static final String TOKEN_PREFIX = "Bearer ";

@@ -3,7 +3,7 @@ package com.rufino.server.config;
 import com.rufino.server.filter.JwtAccessDeniedHandler;
 import com.rufino.server.filter.JwtAuthenticationEntryPoint;
 import com.rufino.server.filter.JwtAuthorizationFilter;
-import com.rufino.server.security.ConstantSecurity;
+import com.rufino.server.constant.SecurityConst;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .authorizeRequests().antMatchers(ConstantSecurity.PUBLIC_URLS).permitAll()
+            .authorizeRequests().antMatchers(SecurityConst.PUBLIC_URLS).permitAll()
             .anyRequest().authenticated()
             .and()
             .exceptionHandling().accessDeniedHandler(this.jwtAccessDenied).authenticationEntryPoint(this.jwtAuthEntryPoint)

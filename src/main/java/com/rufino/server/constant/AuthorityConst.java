@@ -9,5 +9,5 @@ public class AuthorityConst {
     public static final Authority[] HR_AUTHORITIES = { READ, UPDATE };
     public static final Authority[] MANAGER_AUTHORITIES = { READ, UPDATE };
     public static final Authority[] ADMIN_AUTHORITIES = { READ, UPDATE, WRITE };
-    public static final Authority[] SUPER_USER_AUTHORITIES = { READ, UPDATE, WRITE, DELETE };
+    public static final Authority[] SUPER_ADMIN_AUTHORITIES = { READ, UPDATE, WRITE, DELETE };
 }

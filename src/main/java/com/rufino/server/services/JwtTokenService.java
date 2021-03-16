@@ -1,8 +1,7 @@
 package com.rufino.server.services;
 
-import static com.rufino.server.security.ConstantSecurity.AUTHORITIES;
-import static com.rufino.server.security.ConstantSecurity.EXPIRATION_TIME;
-import static com.rufino.server.security.ConstantSecurity.RUFINO_LLC;
+import static com.rufino.server.constant.SecurityConst.*;
+
 
 import java.util.ArrayList;
 import java.util.Date;

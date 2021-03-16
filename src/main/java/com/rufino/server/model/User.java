@@ -34,7 +34,8 @@ import lombok.Setter;
 @Setter
 @JsonInclude(Include.NON_NULL)
 @Entity
-@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "email", name = "uk_user_email"),
+@Table(name = "users", uniqueConstraints = { 
+        @UniqueConstraint(columnNames = "email", name = "uk_user_email"),
         @UniqueConstraint(columnNames = "username", name = "uk_user_username"),
         @UniqueConstraint(columnNames = "userNo", name = "uk_user_no") })
 public class User implements Serializable {

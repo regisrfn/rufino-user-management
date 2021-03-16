@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rufino.server.domain.HttpResponse;
-import com.rufino.server.security.ConstantSecurity;
+import com.rufino.server.constant.SecurityConst;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +25,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
             AccessDeniedException accessDeniedException) throws IOException, ServletException {
 
         HttpResponse httpResponse = new HttpResponse(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED,
-                HttpStatus.UNAUTHORIZED.getReasonPhrase().toUpperCase(), ConstantSecurity.ACCESS_DENIED_MESSAGE);
+                HttpStatus.UNAUTHORIZED.getReasonPhrase().toUpperCase(), SecurityConst.ACCESS_DENIED_MESSAGE);
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());

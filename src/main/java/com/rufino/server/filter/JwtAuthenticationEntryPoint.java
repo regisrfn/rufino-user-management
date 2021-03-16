@@ -8,7 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rufino.server.domain.HttpResponse;
-import com.rufino.server.security.ConstantSecurity;
+import com.rufino.server.constant.SecurityConst;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,7 +25,7 @@ public class JwtAuthenticationEntryPoint extends Http403ForbiddenEntryPoint {
             throws IOException {
 
         HttpResponse httpResponse = new HttpResponse(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN,
-                HttpStatus.FORBIDDEN.getReasonPhrase().toUpperCase(), ConstantSecurity.FORBIDDEN_MESSAGE);
+                HttpStatus.FORBIDDEN.getReasonPhrase().toUpperCase(), SecurityConst.FORBIDDEN_MESSAGE);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
         OutputStream outputStream = response.getOutputStream();

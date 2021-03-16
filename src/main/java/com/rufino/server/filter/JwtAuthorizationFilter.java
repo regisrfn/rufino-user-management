@@ -1,7 +1,7 @@
 package com.rufino.server.filter;
 
-import static com.rufino.server.security.ConstantSecurity.OPTIONS_HTTP_METHOD;
-import static com.rufino.server.security.ConstantSecurity.TOKEN_PREFIX;
+import static com.rufino.server.constant.SecurityConst.OPTIONS_HTTP_METHOD;
+import static com.rufino.server.constant.SecurityConst.TOKEN_PREFIX;
 
 import java.io.IOException;
 import java.util.List;
