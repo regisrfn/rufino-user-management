@@ -1,47 +1,41 @@
 package com.rufino.server.services.impl;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import static com.rufino.server.constant.SecurityConst.JWT_TOKEN_HEADER;
+
 import java.util.List;
 
 import com.rufino.server.model.User;
 import com.rufino.server.repository.UserRepository;
 import com.rufino.server.security.UserSecurity;
+import com.rufino.server.services.JwtTokenService;
 import com.rufino.server.services.UserService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl implements UserDetailsService, UserService {
+public class UserServiceImpl implements UserService {
 
-    private Logger LOGGER = LoggerFactory.getLogger(getClass());
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private JwtTokenService jwtTokenService;
+    private AuthenticationManager authenticationManager;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            JwtTokenService jwtTokenService, AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.getUserByNickname(username);
-
-        if (user == null) {
-            LOGGER.error(String.format("User %s not found", username));
-            throw new UsernameNotFoundException(String.format("User %s not found", username));
-        }
-
-        user.setLastLoginDisplay(user.getLastLogin());
-        user.setLastLogin(ZonedDateTime.now(ZoneId.of("Z")));
-        userRepository.saveOrUpdateUser(user);
-        return new UserSecurity(user);
+        this.jwtTokenService = jwtTokenService;
+        this.authenticationManager = authenticationManager;
     }
 
     @Override
@@ -69,8 +63,30 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         return null;
     }
 
+    @Override
+    public ResponseEntity<User> login(User user) {
+        try {
+            authenticate(user.getUsername(), user.getPassword());
+        } catch (UsernameNotFoundException e) {
+            throw new BadCredentialsException(null);
+        }
+        User validUser = userRepository.getUserByUsername(user.getUsername());
+        UserSecurity userSecurity = new UserSecurity(validUser);
+        HttpHeaders jwtHeaders = getJwtHeader(userSecurity);
+        return new ResponseEntity<>(validUser, jwtHeaders, HttpStatus.OK);
+    }
+
+    private HttpHeaders getJwtHeader(UserSecurity userSecurity) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(JWT_TOKEN_HEADER, jwtTokenService.generateToken(userSecurity));
+        return headers;
+    }
+
+    private void authenticate(String username, String password) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+    }
+
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
-
 }

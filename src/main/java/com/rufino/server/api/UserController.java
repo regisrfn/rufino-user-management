@@ -7,6 +7,7 @@ import com.rufino.server.model.User;
 import com.rufino.server.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,11 @@ public class UserController extends ApiHandlerException {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping("login")
+    public ResponseEntity<User> login(@RequestBody User user) {
+        return userService.login(user);
     }
 
     @PostMapping("register")

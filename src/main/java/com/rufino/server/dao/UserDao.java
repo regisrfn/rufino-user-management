@@ -14,7 +14,7 @@ public interface UserDao {
 
     User getUser(UUID id);
 
-    User getUserByNickname(String nickname);
+    User getUserByUsername(String username);
 
-    User getUserByEmail(String nickname);
+    User getUserByEmail(String email);
 }

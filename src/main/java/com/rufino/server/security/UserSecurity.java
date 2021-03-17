@@ -45,7 +45,7 @@ public class UserSecurity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.user.isLocked();
+        return !this.user.isLocked();
     }
 
     @Override

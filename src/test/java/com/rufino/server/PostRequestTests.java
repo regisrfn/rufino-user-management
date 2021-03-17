@@ -1,5 +1,7 @@
 package com.rufino.server;
 
+import static com.rufino.server.constant.ExceptionConst.EMAIL_NOT_AVAILABLE;
+import static com.rufino.server.constant.SecurityConst.JWT_TOKEN_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,6 +11,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rufino.server.model.User;
 
 import org.hamcrest.core.Is;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,8 +23,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import static com.rufino.server.constant.ExceptionConst.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,6 +37,7 @@ public class PostRequestTests {
 
     @BeforeEach
     void clearTable() {
+        jdbcTemplate.update("DELETE FROM users_authority_list");
         jdbcTemplate.update("DELETE FROM users");
     }
 
@@ -43,15 +45,7 @@ public class PostRequestTests {
     void itShouldSaveUser() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        my_obj.put("username", "user123");
-        my_obj.put("firstName", "John");
-        my_obj.put("lastName", "Doe");
-        my_obj.put("email", "john@gmail.com");
-        my_obj.put("password", "123456");
-
-        MvcResult result = mockMvc.perform(
-                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                .andExpect(status().isOk()).andReturn();
+        MvcResult result = saveUserAndCheck(my_obj);
 
         User response = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);
         assertThat(response.getFirstName()).isEqualTo("John");
@@ -64,15 +58,7 @@ public class PostRequestTests {
     void itShouldNotSaveUser_emailExists() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        my_obj.put("username", "user123");
-        my_obj.put("firstName", "John");
-        my_obj.put("lastName", "Doe");
-        my_obj.put("email", "john@gmail.com");
-        my_obj.put("password", "123456");
-
-        mockMvc.perform(
-                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                .andExpect(status().isOk()).andReturn();
+        saveUserAndCheck(my_obj);
 
         my_obj = new JSONObject();
         my_obj.put("username", "user1234");
@@ -85,6 +71,36 @@ public class PostRequestTests {
                 post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(EMAIL_NOT_AVAILABLE.toUpperCase())))
                 .andExpect(status().isBadRequest()).andReturn();
+    }
+
+    @Test
+    void itShouldLoginUser() throws Exception {
+        JSONObject my_obj = new JSONObject();
+
+        saveUserAndCheck(my_obj);
+
+        my_obj = new JSONObject();
+        my_obj.put("username", "user123");
+        my_obj.put("password", "123456");
+
+        MvcResult mvcResult = mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(status().isOk()).andReturn();
+
+        assertThat(mvcResult.getResponse().getHeader(JWT_TOKEN_HEADER)).isNotBlank();
+
+    }
+
+    private MvcResult saveUserAndCheck(JSONObject my_obj) throws JSONException, Exception {
+        my_obj.put("username", "user123");
+        my_obj.put("firstName", "John");
+        my_obj.put("lastName", "Doe");
+        my_obj.put("email", "john@gmail.com");
+        my_obj.put("password", "123456");
+
+        MvcResult result = mockMvc.perform(
+                post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(status().isOk()).andReturn();
+        return result;
     }
 
 }

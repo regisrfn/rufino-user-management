@@ -44,9 +44,8 @@ public class UserRepository implements UserDao {
     }
 
     @Override
-    public User getUserByNickname(String nickname) {
-        // TODO Auto-generated method stub
-        return null;
+    public User getUserByUsername(String username) {
+        return jpaDataAccess.findUserByUsername(username);
     }
 
     @Override
