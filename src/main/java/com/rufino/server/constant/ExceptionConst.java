@@ -12,6 +12,7 @@ public class ExceptionConst {
     public static final String EMAIL_NOT_AVAILABLE = "Email has already been taken";
     public static final String USERNAME_NOT_AVAILABLE = "Username has already been taken";
     public static final String BAD_REQUEST_MSG = "Request contains invalid fields";
+    public static final String LOGIN_ATTEMPT_ERROR_MSG = "An error occurred while trying login user"; 
     public static final String ERROR_PATH = "/error";
 
 }
