@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rufino.server.model.User;
+import com.rufino.server.services.LoginAttemptService;
 
 import org.hamcrest.core.Is;
 import org.json.JSONException;
@@ -35,11 +36,14 @@ public class PostRequestTests {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private LoginAttemptService loginCache;
 
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @BeforeEach
     void clearTable() {
+        loginCache.clearAll();
         jdbcTemplate.update("DELETE FROM users_authority_list");
         jdbcTemplate.update("DELETE FROM users");
     }
@@ -123,7 +127,7 @@ public class PostRequestTests {
         my_obj.put("password", "123456");
         mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(ACCOUNT_LOCKED.toUpperCase())))
-                .andExpect(status().isBadRequest()).andReturn();
+                .andExpect(status().isUnauthorized()).andReturn();
     }
 
     private MvcResult saveUserAndCheck(JSONObject my_obj) throws JSONException, Exception {

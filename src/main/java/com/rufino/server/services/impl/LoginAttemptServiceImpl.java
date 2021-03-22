@@ -59,4 +59,9 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
         }
     }
 
+    @Override
+    public void clearAll(){
+        loginAttemptCache.invalidateAll();
+    }
+
 }
