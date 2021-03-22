@@ -149,13 +149,13 @@ public class ApiHandlerException implements ErrorController {
     ///////////////////////////// PRIVATE //////////////////////////////////////
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message) {
         return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
-                httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase()), httpStatus);
+                httpStatus.getReasonPhrase().toUpperCase(), message), httpStatus);
     }
 
     private ResponseEntity<HttpResponse> createHttpResponse(HttpStatus httpStatus, String message,
             Map<String, String> errors) {
         return new ResponseEntity<>(new HttpResponse(httpStatus.value(), httpStatus,
-                httpStatus.getReasonPhrase().toUpperCase(), message.toUpperCase(), errors), httpStatus);
+                httpStatus.getReasonPhrase().toUpperCase(), message, errors), httpStatus);
     }
 
     private ResponseEntity<HttpResponse> handleSqlError(DataIntegrityViolationException e) {
