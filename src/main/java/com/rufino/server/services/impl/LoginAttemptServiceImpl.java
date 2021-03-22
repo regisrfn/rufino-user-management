@@ -12,6 +12,9 @@ import com.google.common.cache.LoadingCache;
 import com.rufino.server.exception.ApiRequestException;
 import com.rufino.server.services.LoginAttemptService;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class LoginAttemptServiceImpl implements LoginAttemptService {
     private static final int MAXIMUM_NUMBER_OF_ATTEMPTS = 5;
     private LoadingCache<String, Integer> loginAttemptCache;
@@ -39,7 +42,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     public void addUserToLoginAttemptCache(String username) {
         int attempts = 0;
         try {
-            attempts += loginAttemptCache.get(username);
+            attempts = loginAttemptCache.get(username) + 1;
             loginAttemptCache.put(username, attempts);
         } catch (ExecutionException e) {
             throw new ApiRequestException(LOGIN_ATTEMPT_ERROR_MSG, INTERNAL_SERVER_ERROR);

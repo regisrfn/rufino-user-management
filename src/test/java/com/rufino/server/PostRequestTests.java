@@ -1,6 +1,9 @@
 package com.rufino.server;
 
 import static com.rufino.server.constant.ExceptionConst.EMAIL_NOT_AVAILABLE;
+import static com.rufino.server.constant.ExceptionConst.INCORRECT_CREDENTIALS;
+import static com.rufino.server.constant.ExceptionConst.ACCOUNT_LOCKED;
+
 import static com.rufino.server.constant.SecurityConst.JWT_TOKEN_HEADER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,11 +86,44 @@ public class PostRequestTests {
         my_obj.put("username", "user123");
         my_obj.put("password", "123456");
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+        MvcResult mvcResult = mockMvc
+                .perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(status().isOk()).andReturn();
 
         assertThat(mvcResult.getResponse().getHeader(JWT_TOKEN_HEADER)).isNotBlank();
 
+    }
+
+    @Test
+    void itShouldLockeUser_maxLoginAttempts() throws Exception {
+        JSONObject my_obj = new JSONObject();
+
+        saveUserAndCheck(my_obj);
+
+        my_obj = new JSONObject();
+        my_obj.put("username", "user123");
+        my_obj.put("password", "123456");
+
+        MvcResult mvcResult = mockMvc
+                .perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(status().isOk()).andReturn();
+
+        assertThat(mvcResult.getResponse().getHeader(JWT_TOKEN_HEADER)).isNotBlank();
+
+        my_obj = new JSONObject();
+        my_obj.put("username", "user123");
+        my_obj.put("password", "1234567");
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(
+                    post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(INCORRECT_CREDENTIALS.toUpperCase())))
+                    .andExpect(status().isBadRequest()).andReturn();
+
+        }
+        my_obj.put("password", "123456");
+        mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(ACCOUNT_LOCKED.toUpperCase())))
+                .andExpect(status().isBadRequest()).andReturn();
     }
 
     private MvcResult saveUserAndCheck(JSONObject my_obj) throws JSONException, Exception {
