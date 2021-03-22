@@ -1,10 +1,10 @@
 package com.rufino.server;
 
+import static com.rufino.server.constant.ExceptionConst.ACCOUNT_LOCKED;
 import static com.rufino.server.constant.ExceptionConst.EMAIL_NOT_AVAILABLE;
 import static com.rufino.server.constant.ExceptionConst.INCORRECT_CREDENTIALS;
-import static com.rufino.server.constant.ExceptionConst.ACCOUNT_LOCKED;
-
 import static com.rufino.server.constant.SecurityConst.JWT_TOKEN_HEADER;
+import static com.rufino.server.constant.SecurityConst.MAXIMUM_NUMBER_OF_ATTEMPTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,7 +76,7 @@ public class PostRequestTests {
 
         mockMvc.perform(
                 post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(EMAIL_NOT_AVAILABLE.toUpperCase())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(EMAIL_NOT_AVAILABLE)))
                 .andExpect(status().isBadRequest()).andReturn();
     }
 
@@ -117,16 +117,16 @@ public class PostRequestTests {
         my_obj = new JSONObject();
         my_obj.put("username", "user123");
         my_obj.put("password", "1234567");
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < MAXIMUM_NUMBER_OF_ATTEMPTS; i++) {
             mockMvc.perform(
                     post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(INCORRECT_CREDENTIALS.toUpperCase())))
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(INCORRECT_CREDENTIALS)))
                     .andExpect(status().isBadRequest()).andReturn();
 
         }
         my_obj.put("password", "123456");
         mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(ACCOUNT_LOCKED.toUpperCase())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(ACCOUNT_LOCKED)))
                 .andExpect(status().isUnauthorized()).andReturn();
     }
 

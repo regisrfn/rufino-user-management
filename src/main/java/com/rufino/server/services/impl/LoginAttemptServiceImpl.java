@@ -1,6 +1,7 @@
 package com.rufino.server.services.impl;
 
 import static com.rufino.server.constant.ExceptionConst.LOGIN_ATTEMPT_ERROR_MSG;
+import static com.rufino.server.constant.SecurityConst.MAXIMUM_NUMBER_OF_ATTEMPTS;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.concurrent.ExecutionException;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LoginAttemptServiceImpl implements LoginAttemptService {
-    private static final int MAXIMUM_NUMBER_OF_ATTEMPTS = 5;
+    
     private LoadingCache<String, Integer> loginAttemptCache;
 
     public LoginAttemptServiceImpl() {
