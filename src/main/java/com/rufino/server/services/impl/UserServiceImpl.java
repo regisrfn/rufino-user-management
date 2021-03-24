@@ -7,6 +7,7 @@ import java.util.List;
 import com.rufino.server.model.User;
 import com.rufino.server.repository.UserRepository;
 import com.rufino.server.security.UserSecurity;
+import com.rufino.server.services.EmailService;
 import com.rufino.server.services.JwtTokenService;
 import com.rufino.server.services.UserService;
 
@@ -28,20 +29,27 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     private JwtTokenService jwtTokenService;
     private AuthenticationManager authenticationManager;
+    private  EmailService emailService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            JwtTokenService jwtTokenService, AuthenticationManager authenticationManager) {
+    public UserServiceImpl( UserRepository userRepository,
+                            PasswordEncoder passwordEncoder,
+                            JwtTokenService jwtTokenService, 
+                            AuthenticationManager authenticationManager,
+                            EmailService emailService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
     @Override
     public User register(User user) {
         String password = user.getPassword();
         user.setPassword(encodePassword(password));
+        emailService.sendEmail(user.getFirstName(), user.getPassword(), user.getEmail());
         return userRepository.saveOrUpdateUser(user);
     }
 

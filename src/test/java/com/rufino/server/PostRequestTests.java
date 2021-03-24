@@ -28,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 public class PostRequestTests {
@@ -38,6 +40,8 @@ public class PostRequestTests {
     private MockMvc mockMvc;
     @Autowired
     private LoginAttemptService loginCache;
+    @Autowired
+    private Dotenv dotenv;
 
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -50,6 +54,7 @@ public class PostRequestTests {
 
     @Test
     void itShouldSaveUser() throws Exception {
+        String EMAIL_TEST = dotenv.get("EMAIL_TEST");
         JSONObject my_obj = new JSONObject();
 
         MvcResult result = saveUserAndCheck(my_obj);
@@ -57,7 +62,7 @@ public class PostRequestTests {
         User response = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);
         assertThat(response.getFirstName()).isEqualTo("John");
         assertThat(response.getLastName()).isEqualTo("Doe");
-        assertThat(response.getEmail()).isEqualTo("john@gmail.com");
+        assertThat(response.getEmail()).isEqualTo(EMAIL_TEST);
         my_obj = new JSONObject();
     }
 
@@ -67,12 +72,7 @@ public class PostRequestTests {
 
         saveUserAndCheck(my_obj);
 
-        my_obj = new JSONObject();
         my_obj.put("username", "user1234");
-        my_obj.put("firstName", "John");
-        my_obj.put("lastName", "Doe");
-        my_obj.put("email", "john@gmail.com");
-        my_obj.put("password", "123456");
 
         mockMvc.perform(
                 post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
@@ -131,10 +131,12 @@ public class PostRequestTests {
     }
 
     private MvcResult saveUserAndCheck(JSONObject my_obj) throws JSONException, Exception {
+        String EMAIL_TEST = dotenv.get("EMAIL_TEST");
+        
         my_obj.put("username", "user123");
         my_obj.put("firstName", "John");
         my_obj.put("lastName", "Doe");
-        my_obj.put("email", "john@gmail.com");
+        my_obj.put("email", EMAIL_TEST);
         my_obj.put("password", "123456");
 
         MvcResult result = mockMvc.perform(
