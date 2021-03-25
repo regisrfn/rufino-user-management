@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rufino.server.dao.UserDao;
 import com.rufino.server.model.User;
 import com.rufino.server.services.LoginAttemptService;
 
@@ -24,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -42,6 +44,10 @@ public class PostRequestTests {
     private LoginAttemptService loginCache;
     @Autowired
     private Dotenv dotenv;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -70,9 +76,13 @@ public class PostRequestTests {
     void itShouldNotSaveUser_emailExists() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        saveUserAndCheck(my_obj);
-
         my_obj.put("username", "user1234");
+        my_obj.put("firstName", "John");
+        my_obj.put("lastName", "Doe");
+        my_obj.put("username", "user1234");
+        my_obj.put("email", "john@gmail.com");
+
+        createDefaultUser();       
 
         mockMvc.perform(
                 post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
@@ -84,7 +94,7 @@ public class PostRequestTests {
     void itShouldLoginUser() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        saveUserAndCheck(my_obj);
+        createDefaultUser();
 
         my_obj = new JSONObject();
         my_obj.put("username", "user123");
@@ -102,17 +112,7 @@ public class PostRequestTests {
     void itShouldLockeUser_maxLoginAttempts() throws Exception {
         JSONObject my_obj = new JSONObject();
 
-        saveUserAndCheck(my_obj);
-
-        my_obj = new JSONObject();
-        my_obj.put("username", "user123");
-        my_obj.put("password", "123456");
-
-        MvcResult mvcResult = mockMvc
-                .perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
-                .andExpect(status().isOk()).andReturn();
-
-        assertThat(mvcResult.getResponse().getHeader(JWT_TOKEN_HEADER)).isNotBlank();
+        createDefaultUser();
 
         my_obj = new JSONObject();
         my_obj.put("username", "user123");
@@ -124,7 +124,6 @@ public class PostRequestTests {
                     .andExpect(status().isBadRequest()).andReturn();
 
         }
-        my_obj.put("password", "123456");
         mockMvc.perform(post("/api/v1/user/login").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message", Is.is(ACCOUNT_LOCKED)))
                 .andExpect(status().isUnauthorized()).andReturn();
@@ -132,17 +131,26 @@ public class PostRequestTests {
 
     private MvcResult saveUserAndCheck(JSONObject my_obj) throws JSONException, Exception {
         String EMAIL_TEST = dotenv.get("EMAIL_TEST");
-        
+
         my_obj.put("username", "user123");
         my_obj.put("firstName", "John");
         my_obj.put("lastName", "Doe");
         my_obj.put("email", EMAIL_TEST);
-        my_obj.put("password", "123456");
 
         MvcResult result = mockMvc.perform(
                 post("/api/v1/user/register").contentType(MediaType.APPLICATION_JSON).content(my_obj.toString()))
                 .andExpect(status().isOk()).andReturn();
         return result;
+    }
+
+    private User createDefaultUser(){
+        User user = new User();
+        user.setEmail("john@gmail.com");
+        user.setUsername("user123");
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setPassword(passwordEncoder.encode("123456"));
+        return userDao.saveOrUpdateUser(user);
     }
 
 }
