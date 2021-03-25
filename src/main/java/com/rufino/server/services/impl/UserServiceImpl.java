@@ -11,6 +11,7 @@ import com.rufino.server.services.EmailService;
 import com.rufino.server.services.JwtTokenService;
 import com.rufino.server.services.UserService;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final int DEFAULT_PASSWORD_LENGTH = 12;
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
@@ -47,10 +50,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(User user) {
-        String password = user.getPassword();
+        String password = generatePassword();
         user.setPassword(encodePassword(password));
-        emailService.sendEmail(user.getFirstName(), user.getPassword(), user.getEmail());
-        return userRepository.saveOrUpdateUser(user);
+        User savedUser = userRepository.saveOrUpdateUser(user);
+        emailService.sendEmail(user.getFirstName(), password, user.getEmail());
+        return savedUser;
     }
 
     @Override
@@ -96,5 +100,9 @@ public class UserServiceImpl implements UserService {
 
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    private String generatePassword(){
+        return RandomStringUtils.randomAlphanumeric(DEFAULT_PASSWORD_LENGTH);
     }
 }
