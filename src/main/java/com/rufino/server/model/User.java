@@ -20,6 +20,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,16 +53,19 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long userNo;
 
-    @NotNull(message = "Value should not be empty")
-    private String username, firstName, lastName, password, email;
+    @NotBlank(message = "Value should not be empty")
+    @Column(nullable = false)
+    private String username, firstName, lastName, email;
+
+    @Column(nullable = false)
+    private String password;
 
     private String imageUrl;
 
     @Column(columnDefinition = "timestamp with time zone")
     private ZonedDateTime lastLogin, lastLoginDisplay, updatedAt;
 
-    @NotNull(message = "Value should not be empty")
-    @Column(columnDefinition = "timestamp with time zone")
+    @Column(nullable = false, columnDefinition = "timestamp with time zone")
     private ZonedDateTime createdAt;
 
     @NotNull(message = "Value should not be empty")
